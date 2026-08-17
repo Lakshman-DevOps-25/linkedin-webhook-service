@@ -17,22 +17,26 @@ import { withBackoff, HttpError } from "../../utils/backoff.js";
 
 // Resolve the driver's absolute root: {LOCAL_STORAGE_DIR}/{MEDIA_CONTAINER}.
 function rootDir() {
+  logger.debug("local.rootDir: resolving storage root");
   return path.resolve(config.LOCAL_STORAGE_DIR, config.MEDIA_CONTAINER);
 }
 
 // Ensure the storage root exists; called once at boot.
 export async function initStorage() {
+  logger.debug("local.initStorage: ensuring storage dir");
   await fs.mkdir(rootDir(), { recursive: true });
   logger.info({ dir: rootDir(), driver: "local" }, "local media storage ready");
 }
 
 // Sanitize a candidate filename so it can't traverse or contain unsafe chars.
 function safeName(s) {
+  logger.debug({ s }, "local.safeName: sanitizing filename");
   return String(s || "file").replace(/[^\w.\-]+/g, "_").slice(0, 200);
 }
 
 // Coarsely classify a MIME type into a media category for the UI/records.
 function guessType(contentType = "") {
+  logger.debug({ contentType }, "local.guessType: classifying media");
   if (contentType.startsWith("image/")) return "image";
   if (contentType.startsWith("video/")) return "video";
   if (contentType.startsWith("audio/")) return "audio";
@@ -48,6 +52,7 @@ function guessType(contentType = "") {
  * @returns {Promise<object>}
  */
 export async function archiveMedia({ url, tenantId, conversationId, messageId, filename, bearer }) {
+  logger.debug({ url, tenantId, conversationId, messageId }, "local.archiveMedia: begin");
   // Fetch the source bytes with retry/backoff (network + 429/5xx are retryable).
   const fetchBlob = async () => {
     const res = await fetch(url, { headers: bearer ? { Authorization: `Bearer ${bearer}` } : {} });

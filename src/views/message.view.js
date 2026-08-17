@@ -1,8 +1,10 @@
+import { logger } from "../config/logger.js";
 /**
  * View layer — shapes model documents into API responses. Keeps controllers
  * free of presentation concerns and prevents internal fields from leaking.
  */
 export function serializeMessage(doc) {
+  logger.debug({ messageId: doc && doc.messageId }, "serializeMessage");
   return {
     messageId: doc.messageId,
     conversationId: doc.conversationId,
@@ -27,6 +29,7 @@ export function serializeMessage(doc) {
 
 // Serialize a paginated list of messages for an API list response.
 export function serializeMessageList({ total, records }) {
+  logger.debug({ total, count: records && records.length }, "serializeMessageList");
   return {
     total,
     count: records.length,

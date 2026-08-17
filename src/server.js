@@ -6,6 +6,7 @@ import { createApp } from "./app.js";
 
 // Web entry point: connect infrastructure, build the app, and start listening.
 async function main() {
+  logger.debug("main: booting web server");
   await connectMongo();
   await initStorage();
   const app = createApp();

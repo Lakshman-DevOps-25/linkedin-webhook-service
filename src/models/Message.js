@@ -23,7 +23,7 @@ const MessageSchema = new Schema(
     messageId: { type: String, required: true, unique: true },
     conversationId: { type: String, required: true },
     tenantId: { type: String, required: true },
-    source: { type: String, enum: ["changelog", "internal-webhook"], required: true },
+    source: { type: String, enum: ["internal-webhook"], default: "internal-webhook", required: true },
     direction: { type: String, enum: ["inbound", "outbound", "unknown"], default: "unknown" },
     from: PartySchema,
     to: { type: [PartySchema], default: [] },

@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { logger } from "../config/logger.js";
 import { config } from "../config/index.js";
 import { Message } from "../models/index.js";
 import { serializeMessageList } from "../views/message.view.js";
@@ -17,6 +18,7 @@ export const messageQuerySchema = z.object({
 
 // List archived messages for a tenant with optional sender/recipient/date/text filters.
 export async function list(req, res) {
+  logger.debug({ query: req.query }, "message.list: querying archive");
   const { tenantId, from, to, conversationId, q, fromDate, toDate, limit, skip } = req.query;
 
   const filter = { tenantId };

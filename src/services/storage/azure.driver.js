@@ -15,6 +15,7 @@ let container;
 
 // Connect to the account and ensure the container exists; called once at boot.
 export async function initStorage() {
+  logger.debug("azure.initStorage: connecting + ensuring container");
   const svc = BlobServiceClient.fromConnectionString(config.AZURE_STORAGE_CONNECTION_STRING);
   container = svc.getContainerClient(config.MEDIA_CONTAINER);
   await container.createIfNotExists();
@@ -23,11 +24,13 @@ export async function initStorage() {
 
 // Sanitize a candidate filename so it can't contain unsafe characters.
 function safeName(s) {
+  logger.debug({ s }, "azure.safeName: sanitizing filename");
   return String(s || "file").replace(/[^\w.\-]+/g, "_").slice(0, 200);
 }
 
 // Coarsely classify a MIME type into a media category for the UI/records.
 function guessType(contentType = "") {
+  logger.debug({ contentType }, "azure.guessType: classifying media");
   if (contentType.startsWith("image/")) return "image";
   if (contentType.startsWith("video/")) return "video";
   if (contentType.startsWith("audio/")) return "audio";
@@ -43,6 +46,7 @@ function guessType(contentType = "") {
  * @returns {Promise<object>}
  */
 export async function archiveMedia({ url, tenantId, conversationId, messageId, filename, bearer }) {
+  logger.debug({ url, tenantId, conversationId, messageId }, "azure.archiveMedia: begin");
   if (!container) throw new Error("azure storage not initialized");
 
   // Fetch the source bytes with retry/backoff (network + 429/5xx are retryable).

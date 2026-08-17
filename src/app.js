@@ -14,6 +14,7 @@ import { errorHandler } from "./middlewares/errorHandler.js";
  * Azure driver this mount is skipped (blob URLs are served by Azure).
  */
 export function createApp() {
+  logger.debug({ driver: config.STORAGE_DRIVER }, "createApp: assembling express app");
   const app = express();
   app.use(helmet());
   app.use(pinoHttp({ logger }));

@@ -4,12 +4,14 @@ import { logger } from "../config/logger.js";
 
 // Decide whether a changelog/webhook event concerns messaging (defensive across API versions).
 export function isMessageEvent(evt) {
+  logger.debug({ id: evt && (evt.id || evt.activityId) }, "isMessageEvent: classifying event");
   const name = (evt.resourceName || evt.resource || evt.method || "").toString().toLowerCase();
   return name.includes("message") || name.includes("conversation") || name.includes("messaging");
 }
 
 // Map a raw event into the silver Message shape; media is ALWAYS an array.
 export function normalizeMessageEvent(evt, { source, tenantId }) {
+  logger.debug({ id: evt && (evt.id || evt.activityId), source }, "normalizeMessageEvent: mapping to silver record");
   const p = evt.processedActivity || evt.activity || evt.payload || {};
   const rawMedia = p.attachments ?? p.media ?? [];
   const mediaArr = Array.isArray(rawMedia) ? rawMedia : rawMedia ? [rawMedia] : [];
@@ -42,6 +44,7 @@ export function normalizeMessageEvent(evt, { source, tenantId }) {
  * @returns {'ingested'|'duplicate'|'skipped'}
  */
 export async function persistEvent(evt, { source, tenantId, memberToken = null, bearer = null }) {
+  logger.debug({ source, tenantId }, "persistEvent: begin");
   if (!isMessageEvent(evt)) return "skipped";
   const activityId = evt.id || evt.activityId;
   if (!activityId) {

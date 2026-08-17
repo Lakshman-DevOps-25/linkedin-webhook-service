@@ -18,6 +18,7 @@ export const rawJson = express.raw({ type: "application/json", limit: "1mb" });
  * On success, attaches the parsed JSON to req.parsedBody.
  */
 export function verifyInternalSignature(req, res, next) {
+  logger.debug("verifyInternalSignature: checking timestamp + HMAC");
   const ts = req.get("X-Internal-Timestamp");
   const sig = req.get("X-Internal-Signature");
   const raw = req.body instanceof Buffer ? req.body : Buffer.from("");

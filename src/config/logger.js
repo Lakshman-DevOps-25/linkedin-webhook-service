@@ -21,6 +21,8 @@ export const logger = pino({
 
 // Return the pino-pretty transport in dev if installed; otherwise plain JSON logs.
 function prettyTransport() {
+  // logger is being constructed here, so use console directly.
+  console.debug("prettyTransport: selecting dev log transport");
   try {
     require.resolve("pino-pretty");
     return { target: "pino-pretty", options: { colorize: true } };

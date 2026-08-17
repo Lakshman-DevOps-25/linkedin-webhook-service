@@ -13,6 +13,7 @@ const Envelope = z.object({
  * by middleware; req.parsedBody holds the JSON envelope.
  */
 export async function ingest(req, res) {
+  logger.debug("webhook.ingest: verified request received");
   const parsed = Envelope.safeParse(req.parsedBody);
   if (!parsed.success) return res.status(400).json({ error: "invalid payload", issues: parsed.error.issues });
 
