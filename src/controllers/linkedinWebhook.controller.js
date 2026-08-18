@@ -19,8 +19,14 @@ export function challenge(req, res) {
   // WITHOUT any query string.
   let challengeCode = req.query.challengeCode;
   if (Array.isArray(challengeCode)) {
-    logger.warn({ count: challengeCode.length }, "linkedin.challenge: multiple challengeCode params — using the last (remove the query string from your saved webhook URL)");
-    challengeCode = challengeCode[challengeCode.length - 1];
+    logger.warn({ count: challengeCode.length }, "linkedin.challenge: multiple challengeCode params — save the webhook URL with NO query string");
+    // LinkedIn's real challengeCode is a type-4 UUID. If stale values are present
+    // (e.g. a leftover ?challengeCode=test123 in the saved URL), pick the
+    // UUID-shaped value rather than blindly taking the last one.
+    const uuidRe = /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+    challengeCode =
+      challengeCode.find((c) => uuidRe.test(String(c))) ||
+      challengeCode[challengeCode.length - 1];
   }
   if (!challengeCode) {
     return res.status(400).json({ error: "missing challengeCode" });
