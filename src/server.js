@@ -10,7 +10,10 @@ async function main() {
   await connectMongo();
   await initStorage();
   const app = createApp();
-  app.listen(config.PORT, () => logger.info({ port: config.PORT }, "server listening"));
+  const server = app.listen(config.PORT, () => logger.info({ port: config.PORT }, "server listening"));
+  // Give Render/Node a little more headroom on keep-alive to avoid dropped connections.
+  server.keepAliveTimeout = 120000;
+  server.headersTimeout = 120000;
 }
 
 main().catch((err) => {

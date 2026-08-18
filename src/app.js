@@ -5,17 +5,22 @@ import pinoHttp from "pino-http";
 import { config } from "./config/index.js";
 import { logger } from "./config/logger.js";
 import routes from "./routes/index.js";
+import linkedinWebhookRoutes from "./routes/linkedinWebhook.routes.js";
 import { errorHandler } from "./middlewares/errorHandler.js";
 
 /**
  * Build the Express app (transport-agnostic; no port binding here).
- * When the local storage driver is active, archived media is served statically
- * at /media so the URLs stored in Mongo are browsable in development. Under the
- * Azure driver this mount is skipped (blob URLs are served by Azure).
+ * The LinkedIn webhook route is mounted FIRST, before helmet/logging, because
+ * its challenge must return within LinkedIn's 3-second deadline — we keep that
+ * path as lightweight as possible and free of extra headers.
  */
 export function createApp() {
   logger.debug({ driver: config.STORAGE_DRIVER }, "createApp: assembling express app");
   const app = express();
+
+  // Fast path: LinkedIn challenge/validation (no helmet, no heavy logging).
+  app.use("/linkedin", linkedinWebhookRoutes);
+
   app.use(helmet());
   app.use(pinoHttp({ logger }));
 
@@ -25,9 +30,7 @@ export function createApp() {
     app.use("/media", express.static(mediaRoot));
   }
 
-  // NOTE: no global express.json() — the internal webhook needs the raw body for
-  // signature verification and parses JSON itself. Add express.json() on
-  // specific future routes that need it.
+  // Everything else (health, internal webhook, read-back API).
   app.use(routes);
 
   app.use(errorHandler);

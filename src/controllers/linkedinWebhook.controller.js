@@ -13,7 +13,15 @@ import { hmacHex, verifyLinkedInSignature } from "../utils/crypto.js";
  */
 export function challenge(req, res) {
   logger.debug({ hasCode: !!req.query.challengeCode }, "linkedin.challenge: validation request");
-  const challengeCode = req.query.challengeCode;
+  // LinkedIn appends its own challengeCode to whatever URL you saved. If the saved
+  // URL mistakenly already had a challengeCode, Express parses an ARRAY — in that
+  // case use the LAST value (LinkedIn's real one). Best practice: save the URL
+  // WITHOUT any query string.
+  let challengeCode = req.query.challengeCode;
+  if (Array.isArray(challengeCode)) {
+    logger.warn({ count: challengeCode.length }, "linkedin.challenge: multiple challengeCode params — using the last (remove the query string from your saved webhook URL)");
+    challengeCode = challengeCode[challengeCode.length - 1];
+  }
   if (!challengeCode) {
     return res.status(400).json({ error: "missing challengeCode" });
   }
@@ -22,8 +30,11 @@ export function challenge(req, res) {
     return res.status(500).json({ error: "server missing LINKEDIN_CLIENT_SECRET" });
   }
   const challengeResponse = hmacHex(String(challengeCode), config.LINKEDIN_CLIENT_SECRET);
-  // LinkedIn expects exactly these two fields echoed back.
-  return res.status(200).json({ challengeCode: String(challengeCode), challengeResponse });
+  // LinkedIn requires exactly these two fields, Content-Type application/json,
+  // 200 OK, within 3 seconds. Set the header explicitly and send immediately.
+  res.set("Content-Type", "application/json");
+  // Send as a Buffer so Express does not append "; charset=utf-8" to the header.
+  return res.status(200).send(Buffer.from(JSON.stringify({ challengeCode: String(challengeCode), challengeResponse })));
 }
 
 /**
