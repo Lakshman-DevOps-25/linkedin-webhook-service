@@ -41,6 +41,15 @@ exports.validateWebhook = async (req, res) => {
       challengeResponse
     );
 
+    console.log("Full query:");
+    console.log(req.query);
+
+    console.log("challengeCode:");
+    console.log(req.query.challengeCode);
+
+    console.log("applicationId:");
+    console.log(req.query.applicationId);
+
     console.log("========================================");
 
     return res

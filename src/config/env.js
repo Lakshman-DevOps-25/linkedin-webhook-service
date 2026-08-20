@@ -14,7 +14,7 @@ const config = {
     "77vbq4hasjuc5b",
 
   linkedinClientSecret:
-    "WPL_AP1.9e2I8qpSiN6XYkow.GuVJuA==",
+    "WPL_AP1.J71iYIcjH8OMPu1x.i2DcGw==",
 
   webhookPath:
     "/api/v1/linkedin/webhook",
