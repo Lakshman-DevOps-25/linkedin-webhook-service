@@ -1,16 +1,6 @@
 const express = require("express");
 const helmet = require("helmet");
-
 const config = require("./config/env");
-
-const linkedinWebhookRoutes =
-  require("./routes/linkedinWebhook");
-
-const healthRoutes =
-  require("./routes/health");
-
-const errorHandler =
-  require("./middleware/errorHandler");
 
 const app = express();
 
@@ -18,13 +8,6 @@ app.disable("x-powered-by");
 
 app.use(helmet());
 
-/*
- * IMPORTANT:
- *
- * Capture the raw request body.
- * LinkedIn signature validation requires
- * the exact JSON bytes received.
- */
 app.use(
   express.json({
     limit: config.maxBodySize,
@@ -43,14 +26,21 @@ app.use(
 
 app.use(
   "/health",
-  healthRoutes
+  require("./routes/health")
+);
+
+app.use(
+  "/healthz",
+  require("./routes/health")
 );
 
 app.use(
   config.webhookPath,
-  linkedinWebhookRoutes
+  require("./routes/linkedinWebhook")
 );
 
-app.use(errorHandler);
+app.use(
+  require("./middleware/errorHandler")
+);
 
 module.exports = app;

@@ -2,49 +2,64 @@ const crypto = require("crypto");
 
 const config = require("../config/env");
 
-const LinkedInWebhookEvent =
-  require("../models/LinkedInWebhookEvent");
+const LinkedInWebhookEvent = require("../models/LinkedInWebhookEvent");
 
-const {
-  processLinkedInEvent
-} = require("../services/linkedinEventProcessor");
-
+const { processLinkedInEvent } = require("../services/linkedinEventProcessor");
 
 exports.validateWebhook = async (req, res) => {
   try {
-    const {
-      challengeCode
-    } = req.query;
+    const challengeCode = req.query.challengeCode;
+
+    console.log("========================================");
+    console.log("LINKEDIN WEBHOOK VALIDATION");
+    console.log("========================================");
+    console.log("challengeCode:", challengeCode);
+    console.log(
+      "clientSecret configured:",
+      !!config.linkedinClientSecret
+    );
 
     if (!challengeCode) {
+      console.error("Missing challengeCode");
+
       return res.status(400).json({
         success: false,
         message: "challengeCode is required"
       });
     }
 
-    const challengeResponse =
-      crypto
-        .createHmac(
-          "sha256",
-          config.linkedinClientSecret
-        )
-        .update(challengeCode, "utf8")
-        .digest("hex");
+    const challengeResponse = crypto
+      .createHmac(
+        "sha256",
+        config.linkedinClientSecret
+      )
+      .update(challengeCode, "utf8")
+      .digest("hex");
 
-    return res.status(200).json({
-      challengeCode,
+    console.log(
+      "challengeResponse:",
       challengeResponse
-    });
+    );
+
+    console.log("========================================");
+
+    return res
+      .status(200)
+      .type("application/json")
+      .json({
+        challengeCode: challengeCode,
+        challengeResponse: challengeResponse
+      });
 
   } catch (error) {
     console.error(
-      "LinkedIn validation error:",
+      "LinkedIn webhook validation error:",
       error
     );
 
     return res.status(500).json({
-      success: false
+      success: false,
+      message: "Webhook validation failed"
     });
   }
 };

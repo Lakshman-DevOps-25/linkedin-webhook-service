@@ -26,50 +26,56 @@ function verifyLinkedInSignature(req) {
       .update(stringToSign, "utf8")
       .digest("hex");
 
-  const received =
-    Buffer.from(
-      String(receivedSignature),
-      "utf8"
-    );
+  const received = String(receivedSignature);
 
-  const expected =
-    Buffer.from(
-      expectedSignature,
-      "utf8"
-    );
-
-  if (received.length !== expected.length) {
+  if (received.length !== expectedSignature.length) {
     return false;
   }
 
   return crypto.timingSafeEqual(
-    received,
-    expected
+    Buffer.from(received, "utf8"),
+    Buffer.from(expectedSignature, "utf8")
   );
 }
 
-function linkedinSignatureMiddleware(
+// function linkedinSignatureMiddleware(
+//   req,
+//   res,
+//   next
+// ) {
+//   try {
+//     if (!verifyLinkedInSignature(req)) {
+//       return res.status(401).json({
+//         success: false,
+//         message: "Invalid LinkedIn webhook signature"
+//       });
+//     }
+
+//     next();
+
+//   } catch (error) {
+//     return res.status(401).json({
+//       success: false,
+//       message: "Webhook signature validation failed"
+//     });
+//   }
+// }
+
+// module.exports =
+//   linkedinSignatureMiddleware;
+
+module.exports = function linkedinSignature(
   req,
   res,
   next
 ) {
-  try {
-    if (!verifyLinkedInSignature(req)) {
-      return res.status(401).json({
-        success: false,
-        message: "Invalid LinkedIn webhook signature"
-      });
-    }
-
-    next();
-
-  } catch (error) {
+  if (!verifyLinkedInSignature(req)) {
     return res.status(401).json({
       success: false,
-      message: "Webhook signature validation failed"
+      message:
+        "Invalid LinkedIn webhook signature"
     });
   }
-}
 
-module.exports =
-  linkedinSignatureMiddleware;
+  next();
+};
