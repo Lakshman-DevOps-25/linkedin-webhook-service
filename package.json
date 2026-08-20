@@ -1,0 +1,24 @@
+{
+  "name": "linkedin-webhook-connector",
+  "version": "1.0.0",
+  "description": "Production-ready LinkedIn webhook connector using Node.js, Express and MongoDB",
+  "main": "src/server.js",
+  "scripts": {
+    "start": "node src/server.js",
+    "dev": "nodemon src/server.js",
+    "test": "jest --runInBand"
+  },
+  "dependencies": {
+    "dotenv": "^16.4.7",
+    "express": "^5.1.0",
+    "helmet": "^8.1.0",
+    "mongoose": "^8.18.0",
+    "pino": "^9.9.0",
+    "pino-http": "^10.5.0"
+  },
+  "devDependencies": {
+    "jest": "^30.0.5",
+    "nodemon": "^3.1.10",
+    "supertest": "^7.1.4"
+  }
+}
