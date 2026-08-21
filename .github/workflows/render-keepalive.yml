@@ -1,0 +1,15 @@
+name: Keep Render Web Service Alive
+
+on:
+  schedule:
+    - cron: "*/5 * * * *"
+  workflow_dispatch:
+
+jobs:
+  keepalive:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Ping Render
+        run: |
+          curl -f https://linkedin-webhook-service-681q.onrender.com/health

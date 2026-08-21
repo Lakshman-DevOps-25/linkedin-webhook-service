@@ -29,6 +29,7 @@ async function startServer() {
     const server =
       app.listen(
         config.port,
+        "0.0.0.0",
         () => {
           logger.info(
             `LinkedIn connector running on port ${config.port}`
