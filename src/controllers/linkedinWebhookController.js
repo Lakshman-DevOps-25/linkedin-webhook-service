@@ -6,25 +6,37 @@ const LinkedInWebhookEvent = require("../models/LinkedInWebhookEvent");
 
 const { processLinkedInEvent } = require("../services/linkedinEventProcessor");
 
-exports.validateWebhook = async (req, res) => {
+exports.validateWebhook = (req, res) => {
   try {
-    const challengeCode = req.query.challengeCode;
-
     console.log("========================================");
     console.log("LINKEDIN WEBHOOK VALIDATION");
     console.log("========================================");
-    console.log("challengeCode:", challengeCode);
-    console.log(
-      "clientSecret configured:",
-      !!config.linkedinClientSecret
-    );
+    console.log("Query:", req.query);
+
+    const challengeCode = req.query.challengeCode;
 
     if (!challengeCode) {
       console.error("Missing challengeCode");
 
       return res.status(400).json({
-        success: false,
-        message: "challengeCode is required"
+        error: "challengeCode is required"
+      });
+    }
+
+    // LinkedIn should send exactly one challengeCode.
+    if (Array.isArray(challengeCode)) {
+      console.error("Multiple challengeCode values:", challengeCode);
+
+      return res.status(400).json({
+        error: "Invalid challengeCode"
+      });
+    }
+
+    if (!config.linkedinClientSecret) {
+      console.error("LinkedIn Client Secret is missing");
+
+      return res.status(500).json({
+        error: "LinkedIn Client Secret is not configured"
       });
     }
 
@@ -36,29 +48,27 @@ exports.validateWebhook = async (req, res) => {
       .update(challengeCode, "utf8")
       .digest("hex");
 
+    console.log("challengeCode:", challengeCode);
     console.log(
       "challengeResponse:",
       challengeResponse
     );
-
-    console.log("Full query:");
-    console.log(req.query);
-
-    console.log("challengeCode:");
-    console.log(req.query.challengeCode);
-
-    console.log("applicationId:");
-    console.log(req.query.applicationId);
+    console.log(
+      "challengeResponse length:",
+      challengeResponse.length
+    );
 
     console.log("========================================");
 
     return res
       .status(200)
       .type("application/json")
-      .json({
-        challengeCode: challengeCode,
-        challengeResponse: challengeResponse
-      });
+      .send(
+        JSON.stringify({
+          challengeCode,
+          challengeResponse
+        })
+      );
 
   } catch (error) {
     console.error(
@@ -67,8 +77,7 @@ exports.validateWebhook = async (req, res) => {
     );
 
     return res.status(500).json({
-      success: false,
-      message: "Webhook validation failed"
+      error: "Webhook validation failed"
     });
   }
 };
