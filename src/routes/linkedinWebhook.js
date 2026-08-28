@@ -3,9 +3,10 @@ const crypto = require("crypto");
 
 const router = express.Router();
 
-const app = express();
+const { receiveWebhook } = require("../controllers/linkedinWebhookController");
+const linkedinSignature = require("../middleware/linkedinSignature");
 
-app.get("/api/v1/linkedin/webhook", (req, res) => {
+router.get("/", (req, res) => {
   const challengeCode = req.query.challengeCode;
   const applicationId = req.query.applicationId;
 
@@ -15,11 +16,15 @@ app.get("/api/v1/linkedin/webhook", (req, res) => {
   console.log("has secret:", Boolean(config.linkedinClientSecret));
 
   if (!challengeCode) {
-    return res.status(400).json({ error: "Missing challengeCode" });
+    return res.status(400).json({
+      error: "Missing challengeCode"
+    });
   }
 
   if (!config.linkedinClientSecret) {
-    return res.status(500).json({ error: "Missing LINKEDIN_CLIENT_SECRET" });
+    return res.status(500).json({
+      error: "Missing LINKEDIN_CLIENT_SECRET"
+    });
   }
 
   const challengeResponse = crypto
@@ -29,25 +34,15 @@ app.get("/api/v1/linkedin/webhook", (req, res) => {
 
   console.log("challengeResponse:", challengeResponse);
 
-  res.setHeader("Content-Type", "application/json");
-
-  return res.status(200).json({
-    challengeCode,
-    challengeResponse
-  });
+  return res
+    .status(200)
+    .type("application/json")
+    .json({
+      challengeCode,
+      challengeResponse
+    });
 });
 
-app.post("/api/v1/linkedin/webhook", express.raw({ type: "*/*" }), (req, res) => {
-  console.log("LinkedIn POST received");
-  return res.sendStatus(200);
-});
+router.post("/", linkedinSignature, receiveWebhook);
 
-app.get("/", (req, res) => {
-  res.status(200).send("LinkedIn webhook service is running");
-});
-
-const PORT = process.env.PORT || 3000;
-
-app.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`);
-});
+module.exports = router;
