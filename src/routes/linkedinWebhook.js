@@ -7,8 +7,9 @@ const { receiveWebhook } = require("../controllers/linkedinWebhookController");
 const linkedinSignature = require("../middleware/linkedinSignature");
 
 router.get("/", (req, res) => {
+  console.log("req.query: ", req.query)
   const challengeCode = req.query.challengeCode;
-  const applicationId = req.query.applicationId;
+  const applicationId = req.query.applicationId || "264355008";
 
   console.log("LinkedIn validation request received");
   console.log("challengeCode:", challengeCode);
