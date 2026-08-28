@@ -6,6 +6,7 @@ const LinkedInWebhookEvent = require("../models/LinkedInWebhookEvent");
 
 const { processLinkedInEvent } = require("../services/linkedinEventProcessor");
 
+/*
 exports.validateWebhook = (req, res) => {
   try {
     console.log("========================================");
@@ -81,7 +82,70 @@ exports.validateWebhook = (req, res) => {
     });
   }
 };
+*/
 
+exports.validateWebhook = (req, res) => {
+  try {
+    console.log("========================================");
+    console.log("LINKEDIN WEBHOOK VALIDATION");
+    console.log("========================================");
+    console.log("Query:", req.query);
+
+    let challengeCode = req.query.challengeCode;
+
+    if (!challengeCode) {
+      console.error("Missing challengeCode");
+      return res.status(400).json({
+        error: "challengeCode is required"
+      });
+    }
+
+    // FIX: Instead of throwing an error, handle the array gracefully
+    if (Array.isArray(challengeCode)) {
+      console.warn("Multiple challengeCode values received:", challengeCode);
+
+      // Extract the element that matches a UUID format (8-4-4-4-12 hex chars)
+      const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+      const realCode = challengeCode.find(code => uuidRegex.test(code));
+
+      // Use the matched UUID string, or fallback to the last item if none matches
+      challengeCode = realCode || challengeCode[challengeCode.length - 1];
+      console.log("Extracted true challengeCode string:", challengeCode);
+    }
+
+    if (!config.linkedinClientSecret) {
+      console.error("LinkedIn Client Secret is missing");
+      return res.status(500).json({
+        error: "LinkedIn Client Secret is not configured"
+      });
+    }
+
+    const challengeResponse = crypto
+      .createHmac(
+        "sha256",
+        config.linkedinClientSecret
+      )
+      .update(challengeCode, "utf8")
+      .digest("hex");
+
+    console.log("challengeCode:", challengeCode);
+    console.log("challengeResponse:", challengeResponse);
+    console.log("challengeResponse length:", challengeResponse.length);
+    console.log("========================================");
+
+    // Express res.json() handles content-type and JSON stringification automatically
+    return res.status(200).json({
+      challengeCode,
+      challengeResponse
+    });
+
+  } catch (error) {
+    console.error("LinkedIn webhook validation error:", error);
+    return res.status(500).json({
+      error: "Webhook validation failed"
+    });
+  }
+};
 
 exports.receiveWebhook = async (req, res) => {
   try {
