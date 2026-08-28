@@ -66,15 +66,20 @@ exports.validateWebhook = (req, res) => {
 
     console.log("========================================");
 
-    return res
-      .status(200)
-      .type("application/json")
-      .send(
-        JSON.stringify({
-          challengeCode,
-          challengeResponse
-        })
-      );
+    // return res
+    //   .status(200)
+    //   .type("application/json")
+    //   .send(
+    //     JSON.stringify({
+    //       challengeCode,
+    //       challengeResponse
+    //     })
+    //   );
+
+    return res.status(200).json({
+        challengeCode,
+        challengeResponse
+      });
 
   } catch (error) {
     console.error(
