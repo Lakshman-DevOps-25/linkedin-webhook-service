@@ -174,9 +174,11 @@ exports.validateWebhook = (req, res) => {
     }
   
     const challengeResponse = crypto
-      .createHmac("sha256", LINKEDIN_CLIENT_SECRET)
+      .createHmac("sha256", config.linkedinClientSecret)
       .update(challengeCode, "utf8")
       .digest("hex");
+
+    console.log("challengeResponse: ", challengeResponse);
   
     return res
       .status(200)
