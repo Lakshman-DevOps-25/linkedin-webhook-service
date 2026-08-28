@@ -1,6 +1,8 @@
 const express = require("express");
 const crypto = require("crypto");
 
+const router = express.Router();
+
 const app = express();
 
 app.get("/api/v1/linkedin/webhook", (req, res) => {
