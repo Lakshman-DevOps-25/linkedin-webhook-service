@@ -94,6 +94,7 @@ exports.validateWebhook = (req, res) => {
 };
 */
 
+/*
 exports.validateWebhook = (req, res) => {
   try {
     console.log("========================================");
@@ -160,6 +161,30 @@ exports.validateWebhook = (req, res) => {
       error: "Webhook validation failed"
     });
   }
+};
+*/
+
+exports.validateWebhook = (req, res) => {
+  const challengeCode = req.query.challengeCode;
+  
+    if (!challengeCode) {
+      return res.status(400).json({
+        error: "Missing challengeCode"
+      });
+    }
+  
+    const challengeResponse = crypto
+      .createHmac("sha256", LINKEDIN_CLIENT_SECRET)
+      .update(challengeCode, "utf8")
+      .digest("hex");
+  
+    return res
+      .status(200)
+      .type("application/json")
+      .json({
+        challengeCode,
+        challengeResponse
+      });
 };
 
 exports.receiveWebhook = async (req, res) => {
