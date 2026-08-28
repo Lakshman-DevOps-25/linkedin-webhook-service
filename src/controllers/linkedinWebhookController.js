@@ -143,6 +143,15 @@ exports.validateWebhook = (req, res) => {
     console.log("challengeResponse length:", challengeResponse.length);
     console.log("========================================");
 
+    console.log("C_Code and C_Response: ", {
+      challengeCode,
+      challengeResponse
+    });
+    
+    console.log("C_Code and C_Response Return: ", res.status(200).json({
+      challengeCode,
+      challengeResponse
+    }));
     // Express res.json() handles content-type and JSON stringification automatically
     return res.status(200).json({
       challengeCode,
