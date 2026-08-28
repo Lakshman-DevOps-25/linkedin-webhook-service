@@ -41,12 +41,17 @@ exports.validateWebhook = (req, res) => {
       });
     }
 
+    // const challengeResponse = crypto
+    //   .createHmac(
+    //     "sha256",
+    //     config.linkedinClientSecret
+    //   )
+    //   .update(challengeCode, "utf8")
+    //   .digest("hex");
+
     const challengeResponse = crypto
-      .createHmac(
-        "sha256",
-        config.linkedinClientSecret
-      )
-      .update(challengeCode, "utf8")
+      .createHmac("sha256", config.linkedinClientSecret)
+      .update(challengeCode)
       .digest("hex");
 
     console.log("challengeCode:", challengeCode);
